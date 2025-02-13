@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Music Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    .music-player {
+      width: 600px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .control-btn {
+      padding: 10px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .control-btn:hover {
+      background-color: #45a049;
+    }
+
+    .volume-slider {
+      width: 100px;
+    }
+
+    .playlist, .categories {
+      margin-top: 20px;
+    }
+
+    .playlist ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .playlist li {
+      padding: 5px 0;
+      cursor: pointer;
+    }
+
+    .search {
+      margin-top: 20px;
+    }
+
+    #search-bar {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="music-player">
+    <div class="controls">
+      <button id="prev" class="control-btn">Prev</button>
+      <button id="playPause" class="control-btn">Play</button>
+      <button id="next" class="control-btn">Next</button>
+      <input type="range" id="volume" class="volume-slider" min="0" max="1" step="0.01" value="0.5">
+      <span id="volume-label">Volume: 50%</span>
+    </div>
+    
+    <div class="playlist">
+      <h3>Playlist</h3>
+      <ul id="playlist-items"></ul>
+      <button id="addToPlaylist">Add to Playlist</button>
+    </div>
+
+    <div class="search">
+      <input type="text" id="search-bar" placeholder="Search songs...">
+    </div>
+
+    <div class="categories">
+      <h3>Categories</h3>
+      <div id="categories-list">
+        <button>Pop</button>
+        <button>Rock</button>
+        <button>Jazz</button>
+        <button>Classical</button>
+      </div>
+    </div>
+
+    <audio id="audio-player" controls></audio>
+  </div>
+
+  <script>
+    // Get references to the HTML elements
+    const playPauseButton = document.getElementById("playPause");
+    const prevButton = document.getElementById("prev");
+    const nextButton = document.getElementById("next");
+    const volumeSlider = document.getElementById("volume");
+    const volumeLabel = document.getElementById("volume-label");
+    const searchBar = document.getElementById("search-bar");
+    const audioPlayer = document.getElementById("audio-player");
+    const playlistItems = document.getElementById("playlist-items");
+    const addToPlaylistButton = document.getElementById("addToPlaylist");
+
+    let playlist = [];
+    let currentSongIndex = 0;
+
+    // Music tracks (could be dynamically loaded from a backend)
+    const songs = [
+      { title: "Song 1", url: "song1.mp3", category: "Pop" },
+      { title: "Song 2", url: "song2.mp3", category: "Rock" },
+      { title: "Song 3", url: "song3.mp3", category: "Jazz" },
+      { title: "Song 4", url: "song4.mp3", category: "Classical" },
+    ];
+
+    // Load the first song
+    function loadSong(songIndex) {
+      audioPlayer.src = songs[songIndex].url;
+      audioPlayer.play();
+      playPauseButton.textContent = "Pause";
+      playlistItems.children[songIndex].style.backgroundColor = "#e0e0e0"; // Highlight current song
+
+    }
+
+    function togglePlayPause() {
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        playPauseButton.textContent = "Pause";
+      } else {
+        audioPlayer.pause();
+        playPauseButton.textContent = "Play";
+      }
+    }
+
+    function nextSong() {
+      currentSongIndex = (currentSongIndex + 1) % songs.length;
+      loadSong(currentSongIndex);
+    }
+
+    function prevSong() {
+      currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+      loadSong(currentSongIndex);
+    }
+
+    function updateVolume() {
+      audioPlayer.volume = volumeSlider.value;
+      volumeLabel.textContent = `Volume: ${Math.round(volumeSlider.value * 100)}%`;
+    }
+
+    function addToPlaylist() {
+      const songTitle = prompt("Enter song title:");
+      const songUrl = prompt("Enter song URL:");
+
+      if (songTitle && songUrl) {
+        playlist.push({ title: songTitle, url: songUrl });
+        const listItem = document.createElement("li");
+        listItem.textContent = songTitle;
+        playlistItems.appendChild(listItem);
+      }
+    }
+
+    // Searching functionality
+    function searchSongs() {
+      const searchTerm = searchBar.value.toLowerCase();
+      const filteredSongs = songs.filter(song => song.title.toLowerCase().includes(searchTerm));
+      
+      playlistItems.innerHTML = "";
+      filteredSongs.forEach(song => {
+        const listItem = document.createElement("li");
+        listItem.textContent = song.title;
+        listItem.addEventListener("click", () => {
+          currentSongIndex = songs.indexOf(song);
+          loadSong(currentSongIndex);
+        });
+        playlistItems.appendChild(listItem);
+      });
+    }
+
+    // Event listeners
+    playPauseButton.addEventListener("click", togglePlayPause);
+    nextButton.addEventListener("click", nextSong);
+    prevButton.addEventListener("click", prevSong);
+    volumeSlider.addEventListener("input", updateVolume);
+    searchBar.addEventListener("input", searchSongs);
+    addToPlaylistButton.addEventListener("click", addToPlaylist);
+
+    // Initial song load
+    loadSong(currentSongIndex);
+  </script>
+</body>
+</html>
